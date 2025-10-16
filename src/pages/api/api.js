@@ -103,17 +103,20 @@ async function apiMain(res) {
   
   const response = { thisWeek: [], upcoming: [], genres: [] }; 
   
+  function chunkSlice(array, size){
+    const result = [];
+    for (let i = 0; i < array.length; i += size) {
+      result.push(array.slice(i, i + size));
+    }
+    return result;
+  }
+
   try{
-    for (const { shcate } of genreParams) {
-      const mainParams = {
-        service: API_KEY,
-        rows: "20",
-        signgucode: "11",
-        stdate: yesterday,
-        eddate: aYearDate,
-        cpage: 1,
-        shcate: shcate,
-      };
+    const chunk = chunkSlice(genreParams, 3);
+
+    for (const divide of chunk) {
+
+    const thisWeekGet = divide.map(({shcate}) => {
       const mainThisWeekParams = {
         service: API_KEY,
         rows: "20",
@@ -123,6 +126,13 @@ async function apiMain(res) {
         cpage: 1,
         shcate: shcate,
       };
+      
+      return axios.get("http://www.kopis.or.kr/openApi/restful/pblprfr", {
+        params: { ...mainThisWeekParams },
+      })
+    })
+
+    const upcomingGet = divide.map(({shcate}) => {
       const mainUpcomingParams = {
         service: API_KEY,
         rows: "20",
@@ -133,19 +143,41 @@ async function apiMain(res) {
         shcate: shcate,
       };
 
-    const thisWeekGet = await axios.get('http://www.kopis.or.kr/openApi/restful/pblprfr', { params: mainThisWeekParams });
-    response.thisWeek.push(xmlTOjson(thisWeekGet.data));
-  
-    await new Promise(r => setTimeout(r, 300));
-  
-    const upcomingGet = await axios.get('http://www.kopis.or.kr/openApi/restful/pblprfr', { params: mainUpcomingParams, prfstate: "01" });
-    response.upcoming.push(xmlTOjson(upcomingGet.data));
-  
-    await new Promise(r => setTimeout(r, 300));
-  
-    const genreGet = await axios.get('http://www.kopis.or.kr/openApi/restful/pblprfr', { params: mainParams });
-    response.genres.push(xmlTOjson(genreGet.data));
+      return axios.get("http://www.kopis.or.kr/openApi/restful/pblprfr", {
+        params: { ...mainUpcomingParams, prfstate: "01" },
+      })
+    })
+
+    const genreGet = divide.map(({shcate}) => {
+      const mainParams = {
+        service: API_KEY,
+        rows: "20",
+        signgucode: "11",
+        stdate: yesterday,
+        eddate: aYearDate,
+        cpage: 1,
+        shcate: shcate,
+      };
+
+      return axios.get("http://www.kopis.or.kr/openApi/restful/pblprfr", {
+        params: { ...mainParams },
+      })
+    })
+
+    const [week, coming, genre] = await Promise.all([
+      Promise.all(thisWeekGet),
+      Promise.all(upcomingGet),
+      Promise.all(genreGet),
+    ]);
+
+    response.thisWeek.push(...week.map(response => xmlTOjson(response.data)));
+    response.upcoming.push(...coming.map(response => xmlTOjson(response.data)));
+    response.genres.push(...genre.map(response => xmlTOjson(response.data)));
+
+    // 1초에 10회 대비
+    await new Promise(resolve => setTimeout(resolve, 400));
   }
+
     res.json(response);
 
   } catch (err){

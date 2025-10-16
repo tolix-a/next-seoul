@@ -10,7 +10,8 @@ function Footer() {
       || router.pathname === '/login' 
       || router.pathname === '/category' 
       || router.pathname === '/search2' 
-      || router.pathname === '/join'){
+      || router.pathname === '/join'
+      || router.pathname === '/500' ){
     return null;
   }
   const onToggle = () => {
