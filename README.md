@@ -11,7 +11,7 @@
 
 
 ## 🔗 배포 URL
-<https://seoulw.vercel.app/>
+<https://seoulw-next.vercel.app/>
 
 
 
@@ -119,7 +119,7 @@
 ## 🙋‍♀️ 개발 상세
 | 이름   | Seoul,W GitHub                        |
 |--------|---------------------------------------|
-| 고유나 | [next-seoulw](https://github.com/tolix-a/next-seoulw) |
+| 고유나 | [next-seoulw](https://github.com/tolix-a/next-seoul) |
 | 박지연 | [업데이트중]() |
 | 성주영 | [업데이트중]() |
 | 허다영 | [seoulw-dy](https://github.com/Pon119/seoulw-dy) |
