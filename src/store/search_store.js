@@ -1,6 +1,16 @@
 import { create } from "zustand";
 
 
+function readCookie(name){
+  const cookievalue = document.cookie.split(';').find(row => row.includes(`${name}=`));
+  if (cookievalue) {
+    return JSON.parse(decodeURIComponent(cookievalue.slice(cookievalue.indexOf('=') + 1))) || [] ;
+  } else {
+    return [];
+  }
+}
+
+
 const useSearchStore = create((set) => ({
   searchWord: '',
   setSearchWord: (word) => set({searchWord: word}),
@@ -19,33 +29,26 @@ const useSearchStore = create((set) => ({
       return acc;
     }, [...state.results]);
 
-    if (rere.length > 10) {
+    if (rere.length > 8) {
       rere.shift();
     }
     const sortResults = rere.sort((a, b) => a.timestamp - b.timestamp);
 
-    document.cookie = `results=${JSON.stringify(sortResults)}; path=/;`;
+    document.cookie = `results=${encodeURIComponent(JSON.stringify(sortResults))}; path=/;`;
     return { results: sortResults };
   }),
 
-  readCookie : () => set(() => {
-    const cookievalue = document.cookie.split(';').find(row => row.includes('results='));
-    if (cookievalue) {
-      return {results: JSON.parse(cookievalue.split('=')[1]) || [] };
-    } else {
-      return { results: [] };
-    }
-  }),
+  readCookie: (name) => set({ results: readCookie('results')}),
 
   deleteC: (value) => {
     const cookievalue = document.cookie.split(';').find(row => row.includes('results=')).trim()
     let results = [];
 
     if (cookievalue) {
-      results = JSON.parse(cookievalue.split('=')[1]) || [];
+      results = JSON.parse(decodeURIComponent(cookievalue.slice(cookievalue.indexOf('=') + 1))) || [];
       const updatedR = results.filter(result => result.value !== value);
-      document.cookie = `results=${JSON.stringify(updatedR)}; path=/;`
-      set({ results: updatedR});
+      document.cookie = `results=${encodeURIComponent(JSON.stringify(updatedR))}; path=/;`
+      set({ results: updatedR });
     }
   },
 
@@ -59,31 +62,24 @@ const useSearchStore = create((set) => ({
     );
     
     updatedPerformances.push(performance);
-    if (updatedPerformances.length > 10) {
+    if (updatedPerformances.length > 8) {
       updatedPerformances.pop();
     }
 
-    document.cookie = `recentPerformances=${JSON.stringify(updatedPerformances)}; path=/;`;
+    document.cookie = `recentPerformances=${encodeURIComponent(JSON.stringify(updatedPerformances))}; path=/;`;
     return { recentPerformances: updatedPerformances };
   }),
 
-  readCookie2: () => set(() => {
-    const cookievalue = document.cookie.split(';').find(row => row.includes('recentPerformances='));
-    if (cookievalue) {
-      return { recentPerformances: JSON.parse(cookievalue.split('=')[1]) || [] };
-    } else {
-      return { recentPerformances: [] };
-    }
-  }),
+  readCookie2: (name) => set({ recentPerformances: readCookie('recentPerformances') }),
 
   deleteX: (mt20id) => {
     const cookievalue = document.cookie.split(';').find(row => row.includes('recentPerformances='));
     let performances = [];
     
     if (cookievalue) {
-      performances = JSON.parse(cookievalue.split('=')[1]) || [];
+      performances = JSON.parse(decodeURIComponent(cookievalue.slice(cookievalue.indexOf('=') + 1))) || [];
       const updatedPer = performances.filter(performance => performance.mt20id !== mt20id);
-      document.cookie = `recentPerformances=${JSON.stringify(updatedPer)}; path=/;`;
+      document.cookie = `recentPerformances=${encodeURIComponent(JSON.stringify(updatedPer))}; path=/;`;
       set({ recentPerformances: updatedPer });
     }
   }
